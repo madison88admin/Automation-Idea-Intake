@@ -24,6 +24,9 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
         'bounce-in': 'bounceIn 0.5s ease-out',
+        'page-enter': 'pageEnter 0.3s ease-out',
+        'modal-in': 'modalIn 0.35s ease-out',
+        'backdrop-in': 'backdropIn 0.25s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -34,6 +37,18 @@ export default {
           '0%': { transform: 'scale(0)' },
           '50%': { transform: 'scale(1.1)' },
           '100%': { transform: 'scale(1)' },
+        },
+        pageEnter: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        modalIn: {
+          '0%': { opacity: '0', transform: 'scale(0.9) translateY(20px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        backdropIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
     },

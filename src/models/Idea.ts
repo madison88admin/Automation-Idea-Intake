@@ -62,3 +62,10 @@ export const DEPARTMENTS: Department[] = [
 export const EXPECTED_BENEFITS: ExpectedBenefit[] = [
   'Time Savings', 'Cost Reduction', 'Quality Improvement', 'Customer Satisfaction', 'Employee Satisfaction'
 ];
+
+export const STATUS_COLORS: Record<IdeaStatus, string> = {
+  'Submitted': 'bg-blue-100 text-blue-700',
+  'Under Review': 'bg-orange-100 text-orange-700',
+  'Approved': 'bg-emerald-100 text-emerald-700',
+  'Rejected': 'bg-red-100 text-red-700',
+};

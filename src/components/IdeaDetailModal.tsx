@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Idea, IdeaStatus } from '../models';
+import { Idea, IdeaStatus, STATUS_COLORS } from '../models';
 import { CATEGORIES, ClassificationCategory } from '../models/Classification';
 
 interface IdeaDetailModalProps {
@@ -7,13 +7,6 @@ interface IdeaDetailModalProps {
   onClose: () => void;
   onUpdateStatus: (idea: Idea, status: IdeaStatus, reviewData: { classification?: string; priority?: number; remarks?: string }) => void;
 }
-
-const statusColors: Record<IdeaStatus, string> = {
-  'Submitted': 'bg-blue-100 text-blue-700',
-  'Under Review': 'bg-orange-100 text-orange-700',
-  'Approved': 'bg-emerald-100 text-emerald-700',
-  'Rejected': 'bg-red-100 text-red-700',
-};
 
 export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailModalProps) {
   const [classification, setClassification] = useState<ClassificationCategory | ''>(idea.classification || '');
@@ -77,7 +70,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Status</p>
-              <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${statusColors[idea.status]}`}>
+              <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[idea.status]}`}>
                 {idea.status}
               </span>
             </div>
@@ -160,7 +153,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                   value={priority}
                   onChange={(e) => setPriority(Number(e.target.value))}
                   disabled={isReadOnly}
-                  className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isReadOnly ? 'bg-gray-200' : 'bg-gray-200'}`}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
                   style={{
                     background: isReadOnly ? '#e5e7eb' : `linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%)`
                   }}

@@ -1,16 +1,9 @@
-import { Idea, IdeaStatus } from '../models';
+import { Idea, STATUS_COLORS } from '../models';
 
 interface IdeaTableProps {
   ideas: Idea[];
   onViewDetails: (idea: Idea) => void;
 }
-
-const statusColors: Record<IdeaStatus, string> = {
-  'Submitted': 'bg-blue-100 text-blue-700',
-  'Under Review': 'bg-orange-100 text-orange-700',
-  'Approved': 'bg-emerald-100 text-emerald-700',
-  'Rejected': 'bg-red-100 text-red-700',
-};
 
 export function IdeaTable({ ideas, onViewDetails }: IdeaTableProps) {
   if (ideas.length === 0) {
@@ -57,7 +50,7 @@ export function IdeaTable({ ideas, onViewDetails }: IdeaTableProps) {
                   {new Date(idea.dateSubmitted).toLocaleDateString()}
                 </td>
                 <td className="py-3 px-4">
-                  <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${statusColors[idea.status]}`}>
+                  <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[idea.status]}`}>
                     {idea.status}
                   </span>
                 </td>
