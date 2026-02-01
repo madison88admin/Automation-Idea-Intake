@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { User } from './models';
-import { AuthService } from './services';
 import { Header } from './components';
 import { SubmitPage, AdminDashboard, LogsPage } from './pages';
 
@@ -8,21 +7,11 @@ function App() {
   const [currentView, setCurrentView] = useState<'submit' | 'admin' | 'logs'>('submit');
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const authService = new AuthService();
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
-  }, []);
-
   const handleLoginSuccess = (loggedInUser: User) => {
     setUser(loggedInUser);
   };
 
   const handleLogout = () => {
-    const authService = new AuthService();
-    authService.logout();
     setUser(null);
     setCurrentView('submit');
   };
