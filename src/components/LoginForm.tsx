@@ -61,7 +61,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-xs font-medium text-gray-500 uppercase mb-2">Demo Credentials:</p>
             <div className="text-sm text-gray-600 space-y-1">
-              <p><span className="font-medium">Email:</span> admin@company.com</p>
+              <p><span className="font-medium">Email:</span> lester@company.com</p>
               <p><span className="font-medium">Password:</span> password123</p>
             </div>
           </div>

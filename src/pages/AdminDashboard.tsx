@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Idea, User, IdeaStatus } from '../models';
-import { DEPARTMENTS } from '../models/Idea';
+import { DEPARTMENTS, COUNTRIES } from '../models/Idea';
 import { IdeaService } from '../services';
 import { LoginForm, StatCard, IdeaTable, IdeaDetailModal, ChartCard, BarChart, DonutChart, ProgressCircle } from '../components';
 
 interface AdminDashboardProps {
   onLoginSuccess: (user: User) => void;
+  onNavigate?: (view: any) => void;
   user: User | null;
 }
 
-export function AdminDashboard({ onLoginSuccess, user }: AdminDashboardProps) {
+export function AdminDashboard({ onLoginSuccess, onNavigate, user }: AdminDashboardProps) {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
   const [stats, setStats] = useState<ReturnType<IdeaService['getStatistics']> | null>(null);
@@ -40,6 +41,11 @@ export function AdminDashboard({ onLoginSuccess, user }: AdminDashboardProps) {
   const departmentData = DEPARTMENTS.map((dept, index) => ({
     label: dept, value: stats?.byDepartment[dept] || 0,
     color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'][index % 8]
+  })).filter(d => d.value > 0);
+
+  const countryData = COUNTRIES.map((country, index) => ({
+    label: country, value: stats?.byCountry[country] || 0,
+    color: ['#3b82f6', '#10b981', '#f59e0b'][index % 3]
   })).filter(d => d.value > 0);
 
   const statusData = [
@@ -79,22 +85,31 @@ export function AdminDashboard({ onLoginSuccess, user }: AdminDashboardProps) {
           <ChartCard title="Performance Metrics"><div className="flex justify-around items-center h-32"><ProgressCircle value={approvalRate} label="Approval Rate" color="#10b981" /><ProgressCircle value={reviewRate} label="Review Rate" color="#3b82f6" /></div></ChartCard>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <ChartCard title="Status Overview">{statusData.length > 0 ? <DonutChart data={statusData} centerLabel="Ideas" centerValue={stats?.total || 0} /> : <div className="h-32 flex items-center justify-center text-gray-400">No data</div>}</ChartCard>
-          </div>
-          <ChartCard title="Priority Breakdown">
-            <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <ChartCard title="Status Overview">{statusData.length > 0 ? <DonutChart data={statusData} centerLabel="Ideas" centerValue={stats?.total || 0} /> : <div className="h-32 flex items-center justify-center text-gray-400">No data</div>}</ChartCard>
+          <ChartCard title="Ideas by Country">{countryData.length > 0 ? <DonutChart data={countryData} centerLabel="Total" centerValue={stats?.total || 0} /> : <div className="h-32 flex items-center justify-center text-gray-400">No data</div>}</ChartCard>
+        </div>
+
+        <div className="mb-6">
+          <ChartCard title="Idea Priority Breakdown">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {['Critical', 'High', 'Medium', 'Low'].map((priority) => {
                 const count = stats?.evaluationStats[priority as keyof typeof stats.evaluationStats] || 0;
                 const percentage = stats && stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
                 const colors: Record<string, string> = { Critical: 'bg-red-500', High: 'bg-orange-500', Medium: 'bg-yellow-500', Low: 'bg-gray-400' };
                 return (
-                  <div key={priority} className="flex items-center gap-3">
-                    <span className={`w-3 h-3 rounded-full ${colors[priority]}`}></span>
-                    <span className="text-sm text-gray-600 w-16">{priority}</span>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"><div className={`h-full rounded-full ${colors[priority]}`} style={{ width: `${percentage}%` }}></div></div>
-                    <span className="text-sm font-medium text-gray-700 w-8">{count}</span>
+                  <div key={priority} className="flex flex-col gap-2 p-3 rounded-lg bg-gray-50/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2.5 h-2.5 rounded-full ${colors[priority]}`}></span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{priority}</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-800">{count}</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${colors[priority]}`} style={{ width: `${percentage}%` }}></div>
+                    </div>
+                    <p className="text-[10px] text-gray-400 font-medium">{percentage}% of total</p>
                   </div>
                 );
               })}
@@ -104,10 +119,15 @@ export function AdminDashboard({ onLoginSuccess, user }: AdminDashboardProps) {
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">All Submitted Ideas</h2>
-            <button onClick={loadData} className="px-4 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg">Refresh</button>
+            <h2 className="text-lg font-semibold text-gray-800">Latest Submissions</h2>
+            <button 
+              onClick={() => onNavigate && (onNavigate as any)('ideas')} 
+              className="text-sm font-bold text-primary-600 hover:text-primary-700"
+            >
+              View All Submissions →
+            </button>
           </div>
-          <IdeaTable ideas={ideas} onViewDetails={setSelectedIdea} />
+          <IdeaTable ideas={ideas.slice(0, 5)} onViewDetails={setSelectedIdea} />
         </div>
       </div>
 

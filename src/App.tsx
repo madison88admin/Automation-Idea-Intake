@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { User } from './models';
 import { Header } from './components';
-import { SubmitPage, AdminDashboard, LogsPage } from './pages';
+import { SubmitPage, AdminDashboard, LogsPage, TrackPage, AdminIdeasPage } from './pages';
 
-type View = 'submit' | 'admin' | 'logs';
+type View = 'submit' | 'admin' | 'logs' | 'track' | 'ideas';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('submit');
@@ -40,8 +40,10 @@ function App() {
   const renderPage = () => {
     switch (displayedView) {
       case 'submit': return <SubmitPage />;
+      case 'track': return <TrackPage />;
       case 'logs': return <LogsPage />;
-      case 'admin': return <AdminDashboard user={user} onLoginSuccess={handleLoginSuccess} />;
+      case 'ideas': return <AdminIdeasPage />;
+      case 'admin': return <AdminDashboard user={user} onLoginSuccess={handleLoginSuccess} onNavigate={handleNavigate} />;
     }
   };
 

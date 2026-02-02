@@ -10,6 +10,8 @@ export class IdeaService {
     return `AIT-${randomPart}`;
   }
 
+  private static ideas: Idea[] = [];
+
   submitIdea(data: {
     title: string;
     description: string;
@@ -33,40 +35,42 @@ export class IdeaService {
       status: 'Submitted'
     };
 
+    IdeaService.ideas.push(idea);
     return idea;
   }
 
   getAllIdeas(): Idea[] {
-    return [];
+    return [...IdeaService.ideas];
   }
 
-  getIdeaById(_id: string): Idea | undefined {
-    return undefined;
+  getIdeaById(id: string): Idea | undefined {
+    return IdeaService.ideas.find(i => i.id === id);
   }
 
   updateIdeaStatus(
-    _id: string,
-    _status: IdeaStatus,
-    _reviewData: {
-      classification?: string;
+    id: string,
+    status: IdeaStatus,
+    reviewData: {
+      classification?: any;
       priority?: number;
       remarks?: string;
     }
   ): void {
-    // No-op until Supabase is connected
-  }
-
-  getIdeasByStatus(_status: IdeaStatus): Idea[] {
-    return [];
-  }
-
-  getIdeasByDepartment(_department: Department): Idea[] {
-    return [];
+    const index = IdeaService.ideas.findIndex(i => i.id === id);
+    if (index !== -1) {
+      IdeaService.ideas[index] = {
+        ...IdeaService.ideas[index],
+        status,
+        classification: reviewData.classification,
+        priority: reviewData.priority,
+        adminRemarks: reviewData.remarks
+      };
+    }
   }
 
   getStatistics() {
-    return {
-      total: 0,
+    const stats = {
+      total: IdeaService.ideas.length,
       byStatus: {
         Submitted: 0,
         'Under Review': 0,
@@ -74,6 +78,7 @@ export class IdeaService {
         Rejected: 0,
       },
       byDepartment: {} as Record<string, number>,
+      byCountry: {} as Record<string, number>,
       classificationStats: {
         'Automation': 0,
         'Process Improvement': 0,
@@ -86,5 +91,31 @@ export class IdeaService {
         'Low': 0
       }
     };
+
+    IdeaService.ideas.forEach(idea => {
+      // By Status
+      stats.byStatus[idea.status]++;
+
+      // By Department
+      stats.byDepartment[idea.department] = (stats.byDepartment[idea.department] || 0) + 1;
+
+      // By Country
+      stats.byCountry[idea.country] = (stats.byCountry[idea.country] || 0) + 1;
+
+      // By Classification
+      if (idea.classification) {
+        stats.classificationStats[idea.classification as keyof typeof stats.classificationStats]++;
+      }
+
+      // By Priority
+      if (idea.priority) {
+        if (idea.priority >= 9) stats.evaluationStats.Critical++;
+        else if (idea.priority >= 7) stats.evaluationStats.High++;
+        else if (idea.priority >= 4) stats.evaluationStats.Medium++;
+        else stats.evaluationStats.Low++;
+      }
+    });
+
+    return stats;
   }
 }

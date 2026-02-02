@@ -5,10 +5,10 @@ export class AuthService {
 
   login(email: string, password: string): User | null {
     const demoUsers: Record<string, User> = {
-      'admin@company.com': {
+      'lester@company.com': {
         id: 'user_admin',
-        name: 'Admin User',
-        email: 'admin@company.com',
+        name: 'Lester Jay Mendoza',
+        email: 'lester@company.com',
         role: 'Admin',
         department: 'IT'
       },
