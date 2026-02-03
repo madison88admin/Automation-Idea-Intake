@@ -51,7 +51,7 @@ export function TrackPage() {
   }, [searchId, filters, ideas]);
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('en-US', {
+    return new Date(date).toLocaleString(undefined, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

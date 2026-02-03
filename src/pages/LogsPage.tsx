@@ -18,9 +18,12 @@ export function LogsPage({ user }: LogsPageProps) {
   const [departmentFilter, setDepartmentFilter] = useState<string>('All');
   const [countryFilter, setCountryFilter] = useState<string>('All');
   const [priorityFilter, setPriorityFilter] = useState<PriorityLabel | 'All'>('All');
-  const [dateRange, setDateRange] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [dateRange, setDateRange] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
+  const [monthFilter, setMonthFilter] = useState<string>('All');
+  const [yearFilter, setYearFilter] = useState<string>('All');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIdeaForModal, setSelectedIdeaForModal] = useState<Idea | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -117,12 +120,24 @@ export function LogsPage({ user }: LogsPageProps) {
         if (ideaDate < monthAgo) return false;
       }
     }
+
+    // Month filter
+    if (monthFilter !== 'All') {
+      const ideaDate = new Date(idea.dateSubmitted);
+      if (ideaDate.getMonth().toString() !== monthFilter) return false;
+    }
+
+    // Year filter
+    if (yearFilter !== 'All') {
+      const ideaDate = new Date(idea.dateSubmitted);
+      if (ideaDate.getFullYear().toString() !== yearFilter) return false;
+    }
     
     return true;
   }).sort((a, b) => new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime());
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('en-US', {
+    return new Date(date).toLocaleString(undefined, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -140,157 +155,48 @@ export function LogsPage({ user }: LogsPageProps) {
           <p className="text-gray-500 mt-1">Track all submitted ideas and their status changes</p>
         </div>
 
-        {/* Filters Row */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Date Range */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Date Range</label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-primary-600 focus:outline-none"
+        {/* Filters & Search Row */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {/* Status Filter for the List */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-tight">Show</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as IdeaStatus | 'All')}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Submitted">Submitted</option>
+                  <option value="Under Review">Under Review</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="h-8 w-px bg-gray-100 mx-2" />
+              
+              <button 
+                onClick={() => setShowExportModal(true)}
+                className="px-4 py-2 text-sm font-bold text-white bg-primary-600 rounded-lg hover:bg-primary-700 flex items-center gap-2 shadow-lg shadow-primary-100 transition-all active:scale-95"
               >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">Last 7 Days</option>
-                <option value="month">Last 30 Days</option>
-              </select>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export Report
+              </button>
             </div>
 
-            {/* Country Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Region</label>
-              <select
-                value={countryFilter}
-                onChange={(e) => setCountryFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-primary-600 focus:outline-none"
-              >
-                <option value="All">All Regions</option>
-                {COUNTRIES.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Department Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Department</label>
-              <select
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-primary-600 focus:outline-none"
-              >
-                <option value="All">All Departments</option>
-                {DEPARTMENTS.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Status</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as IdeaStatus | 'All')}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-primary-600 focus:outline-none"
-              >
-                <option value="All">All Status</option>
-                <option value="Submitted">Submitted</option>
-                <option value="Under Review">Under Review</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            </div>
-
-            {/* Priority Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Priority</label>
-              <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-primary-600 focus:outline-none"
-              >
-                <option value="All">All Priority</option>
-                {PRIORITY_LABELS.map(label => (
-                  <option key={label} value={label}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex-1"></div>
-
-            {/* Actions */}
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Print
-            </button>
-            <button 
-              onClick={() => {
-                const headers = [
-                  "ID", "Title", "Description", "Submitter Name", "Submitter Email", 
-                  "Department", "Region/Country", "Status", "Priority", 
-                  "Date Submitted", "Expected Benefit", "Frequency", 
-                  "Current Process Title", "Current Process Problem", "Manual Process?", 
-                  "Multi-Dept?", "Involved Depts", "Admin Remarks", "Classification"
-                ];
-
-                const csvContent = "\uFEFF" + headers.join(",") + "\n"
-                  + filteredIdeas.map(i => [
-                      i.id, 
-                      `"${i.title.replace(/"/g, '""')}"`, 
-                      `"${i.description.replace(/"/g, '""')}"`, 
-                      `"${i.submitterFirstName} ${i.submitterLastName}"`,
-                      i.submitterEmail,
-                      i.department, 
-                      i.country,
-                      i.status, 
-                      (i.status === 'Approved' || i.status === 'Rejected') ? getPriorityLabel(i.priority) : "N/A",
-                      i.dateSubmitted.toLocaleString(),
-                      `"${i.expectedBenefit}"`,
-                      i.frequency,
-                      `"${(i.currentProcessTitle || '').replace(/"/g, '""')}"`,
-                      `"${(i.currentProcessProblem || '').replace(/"/g, '""')}"`,
-                      i.isManualProcess ? "Yes" : "No",
-                      i.involvesMultipleDepartments ? "Yes" : "No",
-                      `"${(i.involvedDepartments || []).join(", ")}"`,
-                      `"${(i.adminRemarks || '').replace(/"/g, '""')}"`,
-                      i.classification || "N/A"
-                    ].join(",")).join("\n");
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                
-                const statusName = statusFilter === 'All' ? 'AllStatus' : statusFilter.replace(/\s+/g, '');
-                const dateStr = new Date().toLocaleDateString().replace(/\//g, '-');
-                const fileName = `${statusName}_IdeaIntakeM88_${dateStr}.csv`;
-                
-                link.setAttribute("href", url);
-                link.setAttribute("download", fileName);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-              className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-md flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Export
-            </button>
-
-            {/* Search */}
-            <div className="relative">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
               <input
                 type="text"
-                placeholder="Search ideas..."
+                placeholder="Search ideas, IDs, or submitters..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:border-primary-600 focus:outline-none w-64"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-100 outline-none transition-all"
               />
               <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -494,6 +400,203 @@ export function LogsPage({ user }: LogsPageProps) {
             setSelectedIdeaForModal(null);
           }}
         />
+      )}
+
+      {/* Export Options Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowExportModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-modal-in flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-primary-900 px-6 py-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16L4 17C4 18.1046 4.89543 19 6 19L18 19C19.1046 19 20 18.1046 20 17L20 16M16 8L12 12M12 12L8 8M12 12L12 3" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-black">Export Analytics Report</h2>
+                  <p className="text-xs text-primary-200 font-medium">Define your data filters to generate the CSV</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowExportModal(false)} 
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-8 bg-gray-50/50">
+              <div className="grid grid-cols-2 gap-8">
+                
+                {/* 1. Date Controls */}
+                <div className="col-span-2 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-[10px] font-black">1</span>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Time Period (Month & Year)</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <select
+                        value={monthFilter}
+                        onChange={(e) => setMonthFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                      >
+                        <option value="All">All Months</option>
+                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((name, idx) => (
+                          <option key={name} value={idx.toString()}>{name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <select
+                        value={yearFilter}
+                        onChange={(e) => setYearFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                      >
+                        <option value="All">All Years</option>
+                        {[2024, 2025, 2026].map(yr => (
+                          <option key={yr} value={yr.toString()}>{yr}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Categorization */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-[10px] font-black">2</span>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Regions & Departments</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <select
+                      value={countryFilter}
+                      onChange={(e) => setCountryFilter(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="All">Global (All Regions)</option>
+                      {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select
+                      value={departmentFilter}
+                      onChange={(e) => setDepartmentFilter(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="All">All Departments</option>
+                      {DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 3. Status Selection */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-[10px] font-black">3</span>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status & Scoring</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as any)}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="All">Any Status</option>
+                      <option value="Submitted">Submitted</option>
+                      <option value="Under Review">Under Review</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                    
+                    {statusFilter === 'Approved' && (
+                      <div className="animate-slide-in">
+                        <select
+                          value={priorityFilter}
+                          onChange={(e) => setPriorityFilter(e.target.value as any)}
+                          className="w-full px-4 py-3 bg-primary-50 border-2 border-primary-200 rounded-xl text-sm font-black text-primary-700 focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                        >
+                          <option value="All">All Priority Levels</option>
+                          {PRIORITY_LABELS.map(l => <option key={l} value={l}>{l}</option>)}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Data Summary & Export Button */}
+              <div className="mt-10 p-5 bg-white border border-gray-100 rounded-3xl flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center">
+                    <span className="text-xl font-black text-gray-900">{filteredIdeas.length}</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matched Records</p>
+                    <p className="text-sm font-bold text-gray-600">Ideas ready for export</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => {
+                        const headers = [
+                          "ID", "Title", "Description", "Submitter Name", "Submitter Email", 
+                          "Department", "Region/Country", "Status", "Priority", 
+                          "Date Submitted", "Expected Benefit", "Frequency", 
+                          "Current Process Title", "Current Process Problem", "Manual Process?", 
+                          "Multi-Dept?", "Involved Depts", "Admin Remarks", "Classification"
+                        ];
+        
+                        const csvContent = "\uFEFF" + headers.map(h => `"${h}"`).join(",") + "\n"
+                          + filteredIdeas.map(i => [
+                              `"${i.id}"`, 
+                              `"${i.title.replace(/"/g, '""')}"`, 
+                              `"${i.description.replace(/"/g, '""')}"`, 
+                              `"${i.submitterFirstName} ${i.submitterLastName}"`,
+                              `"${i.submitterEmail}"`,
+                              `"${i.department}"`, 
+                              `"${i.country}"`,
+                              `"${i.status}"`, 
+                              `"${(i.status === 'Approved' || i.status === 'Rejected') ? getPriorityLabel(i.priority) : "N/A"}"`,
+                              `"${i.dateSubmitted.toLocaleString()}"`,
+                              `"${i.expectedBenefit}"`,
+                              `"${i.frequency}"`,
+                              `"${(i.currentProcessTitle || '').replace(/"/g, '""')}"`,
+                              `"${(i.currentProcessProblem || '').replace(/"/g, '""')}"`,
+                              `"${i.isManualProcess ? "Yes" : "No"}"`,
+                              `"${i.involvesMultipleDepartments ? "Yes" : "No"}"`,
+                              `"${(i.involvedDepartments || []).join(", ")}"`,
+                              `"${(i.adminRemarks || '').replace(/"/g, '""')}"`,
+                              `"${i.classification || "N/A"}"`
+                            ].join(",")).join("\n");
+                        
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        const statusName = statusFilter === 'All' ? 'Report' : statusFilter.replace(/\s+/g, '');
+                        const dateStr = new Date().toLocaleDateString().replace(/\//g, '-');
+                        
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", `${statusName}_IdeaIntakeM88_${dateStr}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }}
+                    disabled={filteredIdeas.length === 0}
+                    className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-2xl shadow-xl shadow-emerald-100 transition-all active:scale-95 disabled:grayscale disabled:opacity-50 flex items-center gap-2 uppercase tracking-widest"
+                  >
+                    Generate CSV Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

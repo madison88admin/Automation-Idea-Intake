@@ -48,7 +48,7 @@ export function IdeaTable({ ideas, onViewDetails }: IdeaTableProps) {
                 <td className="py-3 px-4 text-sm text-gray-600">{idea.country}</td>
                 <td className="py-3 px-4 text-sm text-gray-600">{idea.submitterFirstName} {idea.submitterLastName}</td>
                 <td className="py-3 px-4 text-sm text-gray-600">
-                  {new Date(idea.dateSubmitted).toLocaleString('en-US', {
+                  {new Date(idea.dateSubmitted).toLocaleString(undefined, {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',

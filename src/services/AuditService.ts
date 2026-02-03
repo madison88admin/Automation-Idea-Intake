@@ -69,7 +69,12 @@ export class AuditService {
       ideaId: item.idea_id || '',
       action: (item.action as AuditAction) || 'Updated',
       performedBy: item.performed_by || 'System',
-      performedAt: new Date(item.performed_at || item.submitted_date || Date.now()),
+      performedAt: (() => {
+        const dateStr = item.performed_at || item.submitted_date;
+        if (!dateStr) return new Date();
+        const isoStr = dateStr.includes('Z') || dateStr.includes('+') ? dateStr : `${dateStr.replace(' ', 'T')}Z`;
+        return new Date(isoStr);
+      })(),
       details: item.details || ''
     };
   }

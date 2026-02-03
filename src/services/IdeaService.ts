@@ -4,7 +4,7 @@ import { AuditService } from './AuditService';
 
 export class IdeaService {
   private generateId(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ2345789';
     let randomPart = '';
     for (let i = 0; i < 5; i++) {
         randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -44,7 +44,8 @@ export class IdeaService {
       is_manual_process: data.isManualProcess,
       involves_multiple_departments: data.involvesMultipleDepartments,
       involved_departments: data.involvedDepartments,
-      status: 'Submitted'
+      status: 'Submitted',
+      date_submitted: new Date().toISOString()
     };
 
     console.log('Attempting to insert into Supabase:', insertData);
@@ -232,7 +233,7 @@ export class IdeaService {
       submitterFirstName: nameParts[0],
       submitterLastName: nameParts.slice(1).join(' '),
       submitterEmail: item.submitter_email || '',
-      dateSubmitted: new Date(item.date_submitted),
+      dateSubmitted: item.date_submitted ? new Date(item.date_submitted.includes('Z') || item.date_submitted.includes('+') ? item.date_submitted : `${item.date_submitted}Z`) : new Date(),
       status: item.status || 'Submitted',
       currentProcessTitle: item.current_process, // Map from image name
       currentProcessProblem: item.current_process_problem,

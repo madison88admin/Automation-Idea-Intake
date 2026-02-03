@@ -161,6 +161,19 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                     <p className="text-xs text-primary-600 font-medium truncate">{idea.submitterEmail}</p>
                   </div>
 
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Date Submitted</p>
+                    <p className="text-xs font-black text-gray-800">
+                      {new Date(idea.dateSubmitted).toLocaleString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Region</p>
