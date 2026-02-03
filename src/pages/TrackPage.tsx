@@ -11,6 +11,7 @@ export function TrackPage() {
     department: '' as Department | ''
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -131,41 +132,91 @@ export function TrackPage() {
                     <th className="px-6 py-4 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Department</th>
                     <th className="px-6 py-4 text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Priority</th>
                     <th className="px-6 py-4 text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-right"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredIdeas.length > 0 ? (
                     filteredIdeas.map((idea) => (
-                      <tr key={idea.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                          {formatDate(idea.dateSubmitted)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-xs font-semibold text-theme-700 bg-primary-50 px-2 py-1 rounded">
-                            {idea.id}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-gray-800 line-clamp-1">{idea.title}</p>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-xs font-medium text-gray-600">{idea.department}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          {(idea.status === 'Approved' || idea.status === 'Rejected') ? (
-                            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${getPriorityColor(getPriorityLabel(idea.priority))}`}>
-                              {getPriorityLabel(idea.priority)}
+                      <div key={idea.id} style={{ display: 'contents' }}>
+                        <tr 
+                          className={`hover:bg-gray-50/50 transition-all cursor-pointer ${expandedRow === idea.id ? 'bg-primary-50/50' : ''}`}
+                          onClick={() => setExpandedRow(expandedRow === idea.id ? null : idea.id)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                            {formatDate(idea.dateSubmitted)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-xs font-semibold text-theme-700 bg-primary-50 px-2 py-1 rounded">
+                              {idea.id}
                             </span>
-                          ) : (
-                            <span className="text-gray-300 text-[10px]">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${STATUS_COLORS[idea.status]}`}>
-                            {idea.status}
-                          </span>
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-medium text-gray-800 line-clamp-1">{idea.title}</p>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-xs font-medium text-gray-600">{idea.department}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            {(idea.status === 'Approved' || idea.status === 'Rejected') ? (
+                              <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${getPriorityColor(getPriorityLabel(idea.priority))}`}>
+                                {getPriorityLabel(idea.priority)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-300 text-[10px]">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${STATUS_COLORS[idea.status]}`}>
+                              {idea.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button className="text-xs font-bold text-primary-600 hover:text-primary-700 flex items-center gap-1 ml-auto">
+                              {expandedRow === idea.id ? 'Less' : 'More'}
+                              <svg 
+                                className={`w-4 h-4 transition-transform ${expandedRow === idea.id ? 'rotate-180' : ''}`} 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Expanded Content */}
+                        {expandedRow === idea.id && (
+                          <tr key={`${idea.id}-expanded`}>
+                            <td colSpan={7} className="px-8 py-6 bg-gray-50/30 border-l-4 border-primary-500">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                  <div>
+                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Idea Title</h4>
+                                    <p className="text-sm font-bold text-gray-900 leading-snug">{idea.title}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</h4>
+                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{idea.description}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                  <div>
+                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Current Process</h4>
+                                    <p className="text-sm font-semibold text-gray-800">{idea.currentProcessTitle || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Process Problem / Description</h4>
+                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{idea.currentProcessProblem || 'N/A'}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </div>
                     ))
                   ) : (
                     <tr>
