@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Idea, DEPARTMENTS, EXPECTED_BENEFITS, Department, ExpectedBenefit, Country, COUNTRIES } from '../models';
-import { IdeaService } from '../services';
+import { IdeaService, EmailService } from '../services';
 
 interface IdeaFormProps {
   onSubmitSuccess: (idea: Idea) => void;
@@ -82,6 +82,17 @@ export function IdeaForm({ onSubmitSuccess }: IdeaFormProps) {
       });
 
       if (idea) {
+        // Send confirmation email (non-blocking)
+        const emailService = new EmailService();
+        emailService.sendConfirmationEmail({
+          referenceId: idea.id,
+          submitterName: `${formData.submitterFirstName} ${formData.submitterLastName}`,
+          submitterEmail: `${formData.submitterEmailPrefix}${formData.submitterEmailDomain}`,
+          ideaTitle: formData.title,
+          department: formData.department,
+          dateSubmitted: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        });
+
         // Reset form
         setFormData({
           submitterFirstName: '', submitterLastName: '', submitterEmailPrefix: '', submitterEmailDomain: '@madison88.com', department: '', country: '', title: '', description: '',
