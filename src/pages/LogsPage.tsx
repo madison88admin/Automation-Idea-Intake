@@ -250,23 +250,23 @@ export function LogsPage({ user }: LogsPageProps) {
               <p className="text-sm text-gray-400 font-medium">Loading activity logs...</p>
             </div>
           ) : (
-            <table className="w-full">
+            <table className="w-full table-fixed">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Idea ID</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitter</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Department</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[140px]">Date & Time</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[130px]">Idea ID</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[130px]">Submitter</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[120px]">Department</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[110px]">Status</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[100px]">Priority</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="py-3 px-4"></th>
+                <th className="py-3 px-4 w-[40px]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredIdeas.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500">
+                  <td colSpan={8} className="py-8 text-center text-gray-500">
                     No ideas found matching your criteria
                   </td>
                 </tr>
@@ -304,8 +304,8 @@ export function LogsPage({ user }: LogsPageProps) {
                           <span className="text-gray-300 text-xs">—</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-800 break-all">
-                        {idea.title}
+                      <td className="py-3 px-4 text-sm text-gray-800 max-w-[200px]">
+                        <span className="block truncate" title={idea.title}>{idea.title}</span>
                       </td>
                       <td className="py-3 px-4 text-right">
                         <svg 
@@ -322,10 +322,10 @@ export function LogsPage({ user }: LogsPageProps) {
                     {/* Expanded Row */}
                     {expandedRow === idea.id && (
                       <tr key={`${idea.id}-expanded`}>
-                        <td colSpan={7} className="bg-gray-50 border-l-4 border-primary-500 px-6 py-4">
+                        <td colSpan={8} className="bg-gray-50 border-l-4 border-primary-500 px-6 py-4">
                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Idea Details */}
-                            <div className="bg-white rounded-lg p-4 shadow-sm">
+                            <div className="bg-white rounded-lg p-4 shadow-sm overflow-hidden">
                               <div className="flex justify-between items-center mb-3">
                                 <h4 className="text-sm font-semibold text-primary-700">IDEA DETAILS</h4>
                                 <button 
@@ -338,7 +338,7 @@ export function LogsPage({ user }: LogsPageProps) {
                               <div className="space-y-2 text-sm">
                                 <div className="mb-2">
                                   <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Title</p>
-                                  <p className="text-gray-800 font-medium leading-tight break-all">{idea.title}</p>
+                                  <p className="text-gray-800 font-medium leading-tight break-words">{idea.title}</p>
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-gray-500">Expected Benefit</span>
@@ -368,18 +368,18 @@ export function LogsPage({ user }: LogsPageProps) {
                             </div>
 
                             {/* Activity Log */}
-                            <div className="bg-white rounded-lg p-4 shadow-sm">
+                            <div className="bg-white rounded-lg p-4 shadow-sm overflow-hidden">
                               <h4 className="text-sm font-semibold text-primary-700 mb-3">LOG</h4>
-                              <div className="space-y-3">
+                              <div className="space-y-3 max-h-48 overflow-y-auto">
                                 {getLogsForIdea(idea.id).map((log, index) => (
-                                  <div key={index} className="flex items-start gap-3">
-                                    <div className={`w-2 h-2 rounded-full mt-1.5 ${getLogDotColor(log.action)}`}></div>
-                                    <div className="flex-1">
-                                      <p className="text-sm text-gray-800">{log.details}</p>
-                                      <div className="flex items-center gap-2 mt-0.5">
+                                  <div key={index} className="flex items-start gap-3 min-w-0">
+                                    <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${getLogDotColor(log.action)}`}></div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm text-gray-800 break-words overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>{log.details}</p>
+                                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                         <p className="text-xs text-gray-400">{formatDate(log.performedAt)}</p>
                                         <span className="text-xs text-gray-300">•</span>
-                                        <p className="text-xs font-semibold text-primary-600">by {log.performedBy}</p>
+                                        <p className="text-xs font-semibold text-primary-600 truncate">by {log.performedBy}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -391,14 +391,14 @@ export function LogsPage({ user }: LogsPageProps) {
                             </div>
 
                             {/* Admin Review */}
-                            <div className="bg-white rounded-lg p-4 shadow-sm">
+                            <div className="bg-white rounded-lg p-4 shadow-sm overflow-hidden">
                               <h4 className="text-sm font-semibold text-primary-700 mb-3">REVIEW INFORMATION</h4>
                               <div className="space-y-3">
                                 {idea.adminRemarks ? (
                                   <>
-                                    <div>
+                                    <div className="min-w-0">
                                       <p className="text-xs text-gray-500 mb-1">Admin Remarks</p>
-                                      <p className="text-sm text-gray-800">{idea.adminRemarks}</p>
+                                      <p className="text-sm text-gray-800 break-words overflow-hidden max-h-24 overflow-y-auto">{idea.adminRemarks}</p>
                                     </div>
                                   </>
                                 ) : (

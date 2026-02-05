@@ -75,7 +75,7 @@ export function AdminDashboard({ onLoginSuccess, onNavigate, user }: AdminDashbo
   ].filter(d => d.value > 0);
 
   const approvalRate = stats && stats.total > 0 ? Math.round((stats.byStatus.Approved / stats.total) * 100) : 0;
-  const reviewRate = stats && stats.total > 0 ? Math.round(((stats.byStatus.Approved + stats.byStatus.Rejected) / stats.total) * 100) : 0;
+  const underReviewRate = stats && stats.total > 0 ? Math.round((stats.byStatus['Under Review'] / stats.total) * 100) : 0;
 
   return (
     <div className="min-h-[calc(100vh-64px)] py-6">
@@ -113,7 +113,7 @@ export function AdminDashboard({ onLoginSuccess, onNavigate, user }: AdminDashbo
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <ChartCard title="Ideas by Department">{departmentData.length > 0 ? <BarChart data={departmentData} /> : <div className="h-32 flex items-center justify-center text-gray-400">No data</div>}</ChartCard>
           <ChartCard title="Classification Distribution">{classificationData.length > 0 ? <DonutChart data={classificationData} centerLabel="Total" centerValue={stats?.total || 0} /> : <div className="h-32 flex items-center justify-center text-gray-400">No data</div>}</ChartCard>
-          <ChartCard title="Performance Metrics"><div className="flex justify-around items-center h-32"><ProgressCircle value={approvalRate} label="Approval Rate" color="#047857" /><ProgressCircle value={reviewRate} label="Review Rate" color="#1e40af" /></div></ChartCard>
+          <ChartCard title="Performance Metrics"><div className="flex justify-around items-center h-32"><ProgressCircle value={approvalRate} label="Approved Rate" color="#047857" /><ProgressCircle value={underReviewRate} label="Under Review Rate" color="#b45309" /></div></ChartCard>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
