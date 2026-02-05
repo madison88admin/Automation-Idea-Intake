@@ -18,9 +18,11 @@ export function LogsPage({ user }: LogsPageProps) {
   const [departmentFilter, setDepartmentFilter] = useState<string>('All');
   const [countryFilter, setCountryFilter] = useState<string>('All');
   const [priorityFilter, setPriorityFilter] = useState<PriorityLabel | 'All'>('All');
-  const [dateRange] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
-  const [monthFilter, setMonthFilter] = useState<string>('All');
-  const [yearFilter, setYearFilter] = useState<string>('All');
+  const [dateSingle, setDateSingle] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const [showAdvancedDate, setShowAdvancedDate] = useState(false);
+  const [showAdvancedDateExport, setShowAdvancedDateExport] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIdeaForModal, setSelectedIdeaForModal] = useState<Idea | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -108,31 +110,26 @@ export function LogsPage({ user }: LogsPageProps) {
       }
     }
     
-    // Date range filter
-    if (dateRange !== 'all') {
+    // Date filter
+    if (dateSingle && !dateFrom && !dateTo) {
       const ideaDate = new Date(idea.dateSubmitted);
-      const now = new Date();
-      if (dateRange === 'today') {
-        if (ideaDate.toDateString() !== now.toDateString()) return false;
-      } else if (dateRange === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        if (ideaDate < weekAgo) return false;
-      } else if (dateRange === 'month') {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        if (ideaDate < monthAgo) return false;
+      const target = new Date(dateSingle);
+      if (ideaDate.getFullYear() !== target.getFullYear() ||
+          ideaDate.getMonth() !== target.getMonth() ||
+          ideaDate.getDate() !== target.getDate()) return false;
+    }
+    if (dateFrom || dateTo) {
+      const ideaDate = new Date(idea.dateSubmitted);
+      if (dateFrom) {
+        const from = new Date(dateFrom);
+        from.setHours(0, 0, 0, 0);
+        if (ideaDate < from) return false;
       }
-    }
-
-    // Month filter
-    if (monthFilter !== 'All') {
-      const ideaDate = new Date(idea.dateSubmitted);
-      if (ideaDate.getMonth().toString() !== monthFilter) return false;
-    }
-
-    // Year filter
-    if (yearFilter !== 'All') {
-      const ideaDate = new Date(idea.dateSubmitted);
-      if (ideaDate.getFullYear().toString() !== yearFilter) return false;
+      if (dateTo) {
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        if (ideaDate > to) return false;
+      }
     }
     
     return true;
@@ -214,6 +211,53 @@ export function LogsPage({ user }: LogsPageProps) {
                   {PRIORITY_LABELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
+
+            {/* Date Filter */}
+            <div className="relative flex items-center gap-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</label>
+              <input
+                type="date"
+                value={dateSingle}
+                onChange={(e) => { setDateSingle(e.target.value); setDateFrom(''); setDateTo(''); setShowAdvancedDate(false); }}
+                className="px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+              />
+              <button
+                onClick={() => { setShowAdvancedDate(!showAdvancedDate); if (!showAdvancedDate) setDateSingle(''); }}
+                className={`px-2 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg border transition-all ${showAdvancedDate ? 'bg-primary-50 border-primary-200 text-primary-700' : 'border-gray-200 text-gray-400 hover:text-primary-600 hover:border-primary-200'}`}
+              >
+                Advanced
+              </button>
+              {(dateSingle || dateFrom || dateTo) && (
+                <button
+                  onClick={() => { setDateSingle(''); setDateFrom(''); setDateTo(''); setShowAdvancedDate(false); }}
+                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                  title="Clear dates"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              {showAdvancedDate && (
+                <div className="absolute top-full left-0 mt-2 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex items-center gap-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">From</label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => { setDateFrom(e.target.value); setDateSingle(''); }}
+                    className="px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                  />
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">To</label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => { setDateTo(e.target.value); setDateSingle(''); }}
+                    min={dateFrom || undefined}
+                    className="px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
@@ -480,34 +524,60 @@ export function LogsPage({ user }: LogsPageProps) {
                 <div className="col-span-2 space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-[10px] font-black">1</span>
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Time Period (Month & Year)</h3>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Time Period</h3>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <select
-                        value={monthFilter}
-                        onChange={(e) => setMonthFilter(e.target.value)}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Date</label>
+                      <input
+                        type="date"
+                        value={dateSingle}
+                        onChange={(e) => { setDateSingle(e.target.value); setDateFrom(''); setDateTo(''); setShowAdvancedDateExport(false); }}
                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
-                      >
-                        <option value="All">All Months</option>
-                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((name, idx) => (
-                          <option key={name} value={idx.toString()}>{name}</option>
-                        ))}
-                      </select>
+                      />
                     </div>
-                    <div>
-                      <select
-                        value={yearFilter}
-                        onChange={(e) => setYearFilter(e.target.value)}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                    <div className="flex flex-col items-center pt-4">
+                      <button
+                        onClick={() => { setShowAdvancedDateExport(!showAdvancedDateExport); if (!showAdvancedDateExport) setDateSingle(''); }}
+                        className={`px-4 py-3 text-[10px] font-black uppercase tracking-wider rounded-xl border transition-all ${showAdvancedDateExport ? 'bg-primary-50 border-primary-300 text-primary-700' : 'bg-white border-gray-200 text-gray-400 hover:text-primary-600 hover:border-primary-200'}`}
                       >
-                        <option value="All">All Years</option>
-                        {[2024, 2025, 2026].map(yr => (
-                          <option key={yr} value={yr.toString()}>{yr}</option>
-                        ))}
-                      </select>
+                        Advanced
+                      </button>
                     </div>
+                    {(dateSingle || dateFrom || dateTo) && (
+                      <div className="flex flex-col items-center pt-4">
+                        <button
+                          onClick={() => { setDateSingle(''); setDateFrom(''); setDateTo(''); setShowAdvancedDateExport(false); }}
+                          className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
                   </div>
+                  {showAdvancedDateExport && (
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-primary-50/50 border border-primary-100 rounded-xl">
+                      <div>
+                        <label className="text-[10px] font-bold text-primary-600 uppercase tracking-wider mb-1 block">From</label>
+                        <input
+                          type="date"
+                          value={dateFrom}
+                          onChange={(e) => { setDateFrom(e.target.value); setDateSingle(''); }}
+                          className="w-full px-4 py-3 bg-white border border-primary-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-primary-600 uppercase tracking-wider mb-1 block">To</label>
+                        <input
+                          type="date"
+                          value={dateTo}
+                          onChange={(e) => { setDateTo(e.target.value); setDateSingle(''); }}
+                          min={dateFrom || undefined}
+                          className="w-full px-4 py-3 bg-white border border-primary-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-primary-100 outline-none transition-all cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Categorization */}
