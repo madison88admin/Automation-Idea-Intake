@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { Idea, IdeaStatus, STATUS_COLORS } from '../models';
-import { IdeaService } from '../services';
 import { CATEGORIES, ClassificationCategory } from '../models/Classification';
 
 interface IdeaDetailModalProps {
   idea: Idea;
   onClose: () => void;
   onUpdateStatus: (idea: Idea, status: IdeaStatus, reviewData: { classification?: string; priority?: number; remarks?: string; reviewedBy?: string }) => void;
+  currentUserName?: string;
 }
 
-export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailModalProps) {
+export function IdeaDetailModal({ idea, onClose, onUpdateStatus, currentUserName }: IdeaDetailModalProps) {
   const [classification, setClassification] = useState<ClassificationCategory | ''>(idea.classification || '');
   // For Under Review ideas, only use existing priority if it's a valid selection (1-4)
   // Otherwise default to 0 (Not selected)
@@ -17,9 +17,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
   const [priority, setPriority] = useState<number>(initialPriority);
   const [priorityTouched, setPriorityTouched] = useState<boolean>(initialPriority > 0);
   const [remarks, setRemarks] = useState<string>(idea.adminRemarks || '');
-  const [reviewer, setReviewer] = useState<string>(idea.reviewedBy || '');
-  const [availableReviewers, setAvailableReviewers] = useState<string[]>(['Paul', 'Lester']);
-  const [isAddingReviewer, setIsAddingReviewer] = useState(false);
+  const [reviewer] = useState<string>(idea.reviewedBy || currentUserName || '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 
@@ -40,16 +38,6 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
     }
   }, [remarks]);
 
-  useEffect(() => {
-    const fetchReviewers = async () => {
-      const service = new IdeaService();
-      const distinctReviewers = await service.getReviewers();
-      // Ensure default options are present
-      const combined = Array.from(new Set([...distinctReviewers, 'Paul', 'Lester'])).sort();
-      setAvailableReviewers(combined);
-    };
-    fetchReviewers();
-  }, []);
 
   const [error, setError] = useState<string | null>(null);
   const [confirmationAction, setConfirmationAction] = useState<IdeaStatus | null>(null);
@@ -165,12 +153,12 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                 <div className="space-y-4">
                   <div>
                     <label className="text-[10px] font-bold text-primary-600 uppercase tracking-tight">Idea Title</label>
-                    <p className="text-sm font-medium text-gray-900 leading-tight break-words">{idea.title}</p>
+                    <p className="text-sm font-medium text-gray-900 leading-tight break-all">{idea.title}</p>
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-primary-600 uppercase tracking-tight">Implementation Plan / Goal</label>
                     <div className="mt-2 bg-primary-50/30 rounded-xl p-4 border border-primary-50">
-                      <p className="text-sm font-normal text-gray-800 leading-relaxed whitespace-pre-wrap break-words">{idea.description}</p>
+                      <p className="text-sm font-normal text-gray-800 leading-relaxed whitespace-pre-wrap break-all">{idea.description}</p>
                     </div>
                   </div>
                 </div>
@@ -184,11 +172,11 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                 <div className="space-y-5">
                   <div>
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Process Title</label>
-                    <p className="text-sm font-medium text-gray-800 break-words">{idea.currentProcessTitle || 'Not Provided'}</p>
+                    <p className="text-sm font-medium text-gray-800 break-all">{idea.currentProcessTitle || 'Not Provided'}</p>
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">Pain Points / Current Workflow</label>
-                    <p className="text-sm text-gray-600 italic font-normal leading-relaxed break-words">{idea.currentProcessProblem || 'No additional details recorded'}</p>
+                    <p className="text-sm text-gray-600 italic font-normal leading-relaxed break-all">{idea.currentProcessProblem || 'No additional details recorded'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className={`p-3 rounded-xl border flex items-center justify-between ${idea.isManualProcess ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-gray-50 border-gray-100 text-gray-400 opacity-60'}`}>
@@ -286,7 +274,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                     <div>
                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Admin Assessment Remarks</label>
                       {isReadOnly ? (
-                        <div className="w-full px-3 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-xs font-medium text-gray-700 italic whitespace-pre-wrap min-h-[100px]">
+                        <div className="w-full px-3 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-xs font-medium text-gray-700 italic whitespace-pre-wrap break-all min-h-[100px]">
                           {remarks || 'No detailed assessment remarks provided.'}
                         </div>
                       ) : (
@@ -294,7 +282,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                           ref={textareaRef}
                           value={remarks}
                           onChange={(e) => setRemarks(e.target.value)}
-                          className="w-full px-3 py-3 rounded-xl border border-gray-200 text-xs font-medium focus:ring-2 focus:ring-primary-100 outline-none transition-all resize-none bg-white overflow-hidden shadow-inner"
+                          className="w-full px-3 py-3 rounded-xl border border-gray-200 text-xs font-medium focus:ring-2 focus:ring-primary-100 outline-none transition-all resize-none bg-white overflow-hidden shadow-inner break-all"
                           placeholder="Type your evaluation details here..."
                           style={{ minHeight: '120px' }}
                         />
@@ -302,44 +290,8 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Reviewer</label>
-                      <div className="flex gap-2">
-                        {isAddingReviewer ? (
-                           <div className="flex-1 flex gap-2">
-                             <input 
-                               type="text" 
-                               value={reviewer}
-                               onChange={(e) => setReviewer(e.target.value)}
-                               placeholder="Enter reviewer name"
-                               disabled={isReadOnly}
-                               className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-primary-100 outline-none transition-all bg-white"
-                               autoFocus
-                             />
-                             <button
-                               onClick={() => { setIsAddingReviewer(false); setReviewer(''); }}
-                               className="px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl"
-                             >
-                               Cancel
-                             </button>
-                           </div>
-                        ) : (
-                          <select
-                            value={availableReviewers.includes(reviewer) ? reviewer : ''}
-                            onChange={(e) => {
-                              if (e.target.value === '__NEW__') {
-                                setIsAddingReviewer(true);
-                                setReviewer('');
-                              } else {
-                                setReviewer(e.target.value);
-                              }
-                            }}
-                            disabled={isReadOnly}
-                            className={`w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-primary-100 outline-none transition-all ${isReadOnly ? 'bg-gray-50' : 'bg-white'}`}
-                          >
-                            <option value="">Select Reviewer</option>
-                            {availableReviewers.map((r) => <option key={r} value={r}>{r}</option>)}
-                            <option value="__NEW__" className="text-primary-600 font-bold">+ Add New Reviewer</option>
-                          </select>
-                        )}
+                      <div className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold bg-gray-50 text-gray-700">
+                        {reviewer || 'Unknown'}
                       </div>
                     </div>
                   </div>

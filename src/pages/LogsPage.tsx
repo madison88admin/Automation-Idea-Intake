@@ -304,7 +304,7 @@ export function LogsPage({ user }: LogsPageProps) {
                           <span className="text-gray-300 text-xs">—</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-800">
+                      <td className="py-3 px-4 text-sm text-gray-800 break-all">
                         {idea.title}
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -338,7 +338,7 @@ export function LogsPage({ user }: LogsPageProps) {
                               <div className="space-y-2 text-sm">
                                 <div className="mb-2">
                                   <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Title</p>
-                                  <p className="text-gray-800 font-medium leading-tight">{idea.title}</p>
+                                  <p className="text-gray-800 font-medium leading-tight break-all">{idea.title}</p>
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-gray-500">Expected Benefit</span>
@@ -431,9 +431,10 @@ export function LogsPage({ user }: LogsPageProps) {
       </div>
 
       {selectedIdeaForModal && (
-        <IdeaDetailModal 
-          idea={selectedIdeaForModal} 
-          onClose={() => setSelectedIdeaForModal(null)} 
+        <IdeaDetailModal
+          idea={selectedIdeaForModal}
+          onClose={() => setSelectedIdeaForModal(null)}
+          currentUserName={user?.name}
           onUpdateStatus={async (idea, status, reviewData) => {
             const ideaService = new IdeaService();
             await ideaService.updateIdeaStatus(idea.id, status, reviewData, user?.name || 'Admin');

@@ -152,7 +152,7 @@ export function TrackPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <p className="text-sm font-medium text-gray-800 line-clamp-1">{idea.title}</p>
+                            <p className="text-sm font-medium text-gray-800 line-clamp-1 break-all">{idea.title}</p>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="text-xs font-medium text-gray-600">{idea.department}</span>
@@ -194,11 +194,11 @@ export function TrackPage() {
                                 <div className="space-y-4">
                                   <div>
                                     <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Idea Title</h4>
-                                    <p className="text-sm font-bold text-gray-900 leading-snug">{idea.title}</p>
+                                    <p className="text-sm font-bold text-gray-900 leading-snug break-all">{idea.title}</p>
                                   </div>
                                   <div>
                                     <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</h4>
-                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{idea.description}</p>
+                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-all">{idea.description}</p>
                                   </div>
                                 </div>
                                 

@@ -189,10 +189,11 @@ export function AdminIdeasPage({ user }: AdminIdeasPageProps) {
       </div>
 
       {selectedIdea && (
-        <IdeaDetailModal 
-          idea={selectedIdea} 
-          onClose={() => setSelectedIdea(null)} 
+        <IdeaDetailModal
+          idea={selectedIdea}
+          onClose={() => setSelectedIdea(null)}
           onUpdateStatus={handleUpdateStatus}
+          currentUserName={user?.name}
         />
       )}
     </div>

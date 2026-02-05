@@ -173,10 +173,11 @@ export function AdminDashboard({ onLoginSuccess, onNavigate, user }: AdminDashbo
       </div>
 
       {selectedIdea && (
-        <IdeaDetailModal 
-          idea={selectedIdea} 
-          onClose={() => setSelectedIdea(null)} 
+        <IdeaDetailModal
+          idea={selectedIdea}
+          onClose={() => setSelectedIdea(null)}
           onUpdateStatus={handleUpdateStatus}
+          currentUserName={user?.name}
         />
       )}
     </div>

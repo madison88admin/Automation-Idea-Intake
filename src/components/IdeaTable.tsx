@@ -39,7 +39,7 @@ export function IdeaTable({ ideas, onViewDetails }: IdeaTableProps) {
                 <td className="py-3 px-4">
                   <button
                     onClick={() => onViewDetails(idea)}
-                    className="text-sm font-medium text-gray-800 hover:text-primary-600 text-left"
+                    className="text-sm font-medium text-gray-800 hover:text-primary-600 text-left break-all"
                   >
                     {idea.title}
                   </button>
