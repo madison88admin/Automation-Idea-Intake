@@ -10,7 +10,7 @@ export function TrackPage() {
     status: '' as IdeaStatus | '',
     department: '' as Department | '',
     country: '' as Country | '',
-    dateMonth: '',
+    dateSingle: '',
     dateFrom: '',
     dateTo: ''
   });
@@ -57,14 +57,15 @@ export function TrackPage() {
       result = result.filter(idea => idea.country === filters.country);
     }
 
-    // Date Month Filter (e.g. "2026-02")
-    if (filters.dateMonth && !filters.dateFrom && !filters.dateTo) {
-      const [year, month] = filters.dateMonth.split('-').map(Number);
-      const monthStart = new Date(year, month - 1, 1);
-      const monthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+    // Single Date Filter
+    if (filters.dateSingle && !filters.dateFrom && !filters.dateTo) {
+      const selected = new Date(filters.dateSingle);
+      selected.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(filters.dateSingle);
+      endOfDay.setHours(23, 59, 59, 999);
       result = result.filter(idea => {
         const d = new Date(idea.dateSubmitted);
-        return d >= monthStart && d <= monthEnd;
+        return d >= selected && d <= endOfDay;
       });
     }
 
@@ -161,7 +162,7 @@ export function TrackPage() {
                 </select>
               </div>
 
-              <div>
+              <div className={showDateRange ? 'md:col-span-2' : ''}>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide">Date</label>
                   <button
@@ -169,7 +170,7 @@ export function TrackPage() {
                     onClick={() => {
                       setShowDateRange(!showDateRange);
                       if (!showDateRange) {
-                        setFilters(f => ({ ...f, dateMonth: '' }));
+                        setFilters(f => ({ ...f, dateSingle: '' }));
                       } else {
                         setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }));
                       }
@@ -181,29 +182,31 @@ export function TrackPage() {
                 </div>
                 {!showDateRange ? (
                   <input
-                    type="month"
-                    value={filters.dateMonth}
-                    onChange={(e) => setFilters({ ...filters, dateMonth: e.target.value, dateFrom: '', dateTo: '' })}
+                    type="date"
+                    value={filters.dateSingle}
+                    onChange={(e) => setFilters({ ...filters, dateSingle: e.target.value, dateFrom: '', dateTo: '' })}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm bg-white"
                   />
                 ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={filters.dateFrom}
-                      onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value, dateMonth: '' })}
-                      placeholder="From"
-                      title="Date from"
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm bg-white"
-                    />
-                    <input
-                      type="date"
-                      value={filters.dateTo}
-                      onChange={(e) => setFilters({ ...filters, dateTo: e.target.value, dateMonth: '' })}
-                      placeholder="To"
-                      title="Date to"
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm bg-white"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] text-gray-400 mb-1">From</p>
+                      <input
+                        type="date"
+                        value={filters.dateFrom}
+                        onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value, dateSingle: '' })}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm bg-white"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 mb-1">To</p>
+                      <input
+                        type="date"
+                        value={filters.dateTo}
+                        onChange={(e) => setFilters({ ...filters, dateTo: e.target.value, dateSingle: '' })}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm bg-white"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -212,7 +215,7 @@ export function TrackPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setFilters({ status: '', department: '', country: '', dateMonth: '', dateFrom: '', dateTo: '' });
+                    setFilters({ status: '', department: '', country: '', dateSingle: '', dateFrom: '', dateTo: '' });
                     setShowDateRange(false);
                   }}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-500 hover:bg-gray-100 transition-all"
