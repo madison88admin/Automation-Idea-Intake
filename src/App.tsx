@@ -1,43 +1,22 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User } from './models';
 import { Header } from './components';
 import { SubmitPage, AdminDashboard, LogsPage, TrackPage, AdminIdeasPage } from './pages';
-import { AuthService } from './services/AuthService';
 
 type View = 'submit' | 'admin' | 'logs' | 'track' | 'ideas';
 
 function App() {
-  const [currentView, setCurrentView] = useState<View>(() => (localStorage.getItem('automation_idea_intake_view') as View) || 'submit');
-  const [displayedView, setDisplayedView] = useState<View>(() => (localStorage.getItem('automation_idea_intake_view') as View) || 'submit');
+  const [currentView, setCurrentView] = useState<View>('submit');
+  const [displayedView, setDisplayedView] = useState<View>('submit');
   const [fading, setFading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [authReady, setAuthReady] = useState(false);
   const pendingView = useRef<View | null>(null);
-
-  const authService = useMemo(() => new AuthService(), []);
-
-  useEffect(() => {
-    // Initialize auth from localStorage or Supabase session and subscribe to changes
-    let unsubscribe: (() => void) | undefined;
-    (async () => {
-      const restored = await authService.init();
-      if (restored) setUser(restored);
-      setAuthReady(true);
-      unsubscribe = authService.onAuthStateChange((u) => {
-        setUser(u);
-      });
-    })();
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [authService]);
 
   const handleLoginSuccess = (loggedInUser: User) => {
     setUser(loggedInUser);
   };
 
-  const handleLogout = async () => {
-    await authService.logout();
+  const handleLogout = () => {
     setUser(null);
     handleNavigate('submit');
   };
@@ -46,7 +25,6 @@ function App() {
     if (view === displayedView && !fading) return;
     pendingView.current = view;
     setCurrentView(view);
-    localStorage.setItem('automation_idea_intake_view', view);
     setFading(true);
   };
 
@@ -74,7 +52,7 @@ function App() {
       <Header
         currentView={currentView}
         onNavigate={handleNavigate}
-        isLoggedIn={authReady ? !!user : !!user}
+        isLoggedIn={!!user}
         userName={user?.name}
         onLogout={handleLogout}
       />

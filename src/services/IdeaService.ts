@@ -300,7 +300,7 @@ export class IdeaService {
       involvesMultipleDepartments: item.involves_multiple_departments,
       involvedDepartments: item.involved_departments || [],
       classification: item.classification,
-      priority: item.priority,
+      priority: item.priority != null ? Number(item.priority) : undefined,
       adminRemarks: item.admin_remarks,
       reviewedBy: item.reviewed_by
     };
