@@ -271,7 +271,7 @@ export function IdeaForm({ onSubmitSuccess }: IdeaFormProps) {
         </div>
 
         <p className="text-center text-[11px] text-gray-400 max-w-md mx-auto">
-          By submitting, you agree that your idea will be reviewed by the IT Automation Team. 
+          By submitting, you agree that your idea will be reviewed by the Madison 88 Business Solutions Asia IT Department Team. 
           A confirmation email will be sent to <span className="font-bold text-gray-500">{formData.submitterEmailPrefix}{formData.submitterEmailDomain}</span>.
         </p>
       </div>

@@ -11,7 +11,11 @@ interface IdeaDetailModalProps {
 
 export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailModalProps) {
   const [classification, setClassification] = useState<ClassificationCategory | ''>(idea.classification || '');
-  const [priority, setPriority] = useState<number>(idea.priority || 5);
+  // For Under Review ideas, only use existing priority if it's a valid selection (1-4)
+  // Otherwise default to 0 (Not selected)
+  const initialPriority = (idea.priority && idea.priority >= 1 && idea.priority <= 4) ? idea.priority : 0;
+  const [priority, setPriority] = useState<number>(initialPriority);
+  const [priorityTouched, setPriorityTouched] = useState<boolean>(initialPriority > 0);
   const [remarks, setRemarks] = useState<string>(idea.adminRemarks || '');
   const [reviewer, setReviewer] = useState<string>(idea.reviewedBy || '');
   const [availableReviewers, setAvailableReviewers] = useState<string[]>(['Paul', 'Lester']);
@@ -55,6 +59,11 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
         setError('Classification is required');
         return;
       }
+      
+      if (priority === 0 || !priorityTouched) {
+        setError('Please select a priority level (1-Low to 4-Critical) before approving');
+        return;
+      }
     }
 
 
@@ -68,7 +77,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
 
     onUpdateStatus(idea, confirmationAction, {
       classification: classification || undefined,
-      priority: priority,
+      priority: priority > 0 ? priority : undefined,
       remarks: remarks || undefined,
       reviewedBy: reviewer || undefined
     });
@@ -81,6 +90,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
   };
 
   const getPriorityColor = (value: number) => {
+    if (value === 0) return 'text-gray-400';
     if (value === 4) return 'text-red-600';
     if (value === 3) return 'text-orange-600';
     if (value === 2) return 'text-yellow-600';
@@ -88,6 +98,7 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
   };
 
   const getPriorityLabel = (value: number) => {
+    if (value === 0) return 'Not yet selected';
     if (value === 4) return 'Critical';
     if (value === 3) return 'High';
     if (value === 2) return 'Medium';
@@ -249,14 +260,24 @@ export function IdeaDetailModal({ idea, onClose, onUpdateStatus }: IdeaDetailMod
                     <div>
                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block flex justify-between">
                         Priority Level
-                        <span className={`font-bold ${getPriorityColor(priority)}`}>{getPriorityLabel(priority)} ({priority})</span>
+                        <span className={`font-bold ${getPriorityColor(priority)} ${priority === 0 ? 'text-red-500' : ''}`}>
+                          {getPriorityLabel(priority)} {priority > 0 && `(${priority})`}
+                          {priority === 0 && <span className="ml-1">⚠</span>}
+                        </span>
                       </label>
                       <input
-                        type="range" min="1" max="4" value={priority}
-                        onChange={(e) => setPriority(Number(e.target.value))}
+                        type="range" min="0" max="4" value={priority}
+                        onChange={(e) => { setPriority(Number(e.target.value)); setPriorityTouched(true); }}
                         disabled={isReadOnly}
-                        className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none accent-primary-600 cursor-pointer"
+                        className={`w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer ${priority === 0 ? 'accent-gray-400' : 'accent-primary-600'}`}
                       />
+                      <div className="flex justify-between mt-1 px-0.5">
+                        <span className="text-[9px] text-gray-400 font-medium italic">Not selected</span>
+                        <span className="text-[9px] text-gray-400 font-medium">1-Low</span>
+                        <span className="text-[9px] text-gray-400 font-medium">2-Med</span>
+                        <span className="text-[9px] text-gray-400 font-medium">3-High</span>
+                        <span className="text-[9px] text-gray-400 font-medium">4-Crit</span>
+                      </div>
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Admin Assessment Remarks</label>

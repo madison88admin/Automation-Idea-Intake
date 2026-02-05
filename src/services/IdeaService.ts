@@ -161,15 +161,24 @@ export class IdeaService {
     },
     performedBy: string = 'Admin'
   ): Promise<boolean> {
+    const updateData: any = {
+      status,
+      classification: reviewData.classification || null,
+      admin_remarks: reviewData.remarks || null,
+      reviewed_by: reviewData.reviewedBy || null
+    };
+    
+    // Only set priority if it's explicitly provided and valid (1-4)
+    // Otherwise set to null to ensure "Not selected" state
+    if (reviewData.priority && reviewData.priority >= 1 && reviewData.priority <= 4) {
+      updateData.priority = reviewData.priority;
+    } else {
+      updateData.priority = null;
+    }
+
     const { error } = await supabase
       .from('ideas')
-      .update({
-        status,
-        classification: reviewData.classification,
-        priority: reviewData.priority,
-        admin_remarks: reviewData.remarks,
-        reviewed_by: reviewData.reviewedBy
-      })
+      .update(updateData)
       .eq('idea_id', id);
 
     if (error) {
@@ -183,13 +192,15 @@ export class IdeaService {
     
     if (status === 'Approved') {
       action = 'Approved';
-      details = 'Idea has been approved for implementation';
+      const priorityLabel = reviewData.priority === 4 ? 'Critical' : reviewData.priority === 3 ? 'High' : reviewData.priority === 2 ? 'Medium' : 'Low';
+      details = `Idea has been approved for implementation. Classification: ${reviewData.classification || 'N/A'}, Priority: ${priorityLabel}`;
     } else if (status === 'Rejected') {
       action = 'Rejected';
       details = `Idea has been rejected. Remarks: ${reviewData.remarks || 'None'}`;
     } else if (reviewData.classification || reviewData.priority) {
       action = 'Updated';
-      details = 'Idea details (classification/priority) updated';
+      const priorityLabel = reviewData.priority ? (reviewData.priority === 4 ? 'Critical' : reviewData.priority === 3 ? 'High' : reviewData.priority === 2 ? 'Medium' : 'Low') : '';
+      details = `Idea details updated - Classification: ${reviewData.classification || 'N/A'}${reviewData.priority ? `, Priority: ${priorityLabel}` : ''}`;
     }
 
     const auditService = new AuditService();
@@ -257,9 +268,9 @@ export class IdeaService {
 
       // By Priority - Only count for Approved ideas
       if (idea.priority && idea.status === 'Approved') {
-        if (idea.priority >= 9) stats.evaluationStats.Critical++;
-        else if (idea.priority >= 7) stats.evaluationStats.High++;
-        else if (idea.priority >= 4) stats.evaluationStats.Medium++;
+        if (idea.priority === 4) stats.evaluationStats.Critical++;
+        else if (idea.priority === 3) stats.evaluationStats.High++;
+        else if (idea.priority === 2) stats.evaluationStats.Medium++;
         else stats.evaluationStats.Low++;
       }
     });

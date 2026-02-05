@@ -361,7 +361,7 @@ export function LogsPage({ user }: LogsPageProps) {
                                 {idea.priority && (idea.status === 'Approved' || idea.status === 'Rejected') && (
                                   <div className="flex justify-between">
                                     <span className="text-gray-500">Priority</span>
-                                    <span className="text-gray-800">{idea.priority}/10 ({getPriorityLabel(idea.priority)})</span>
+                                    <span className="text-gray-800">{getPriorityLabel(idea.priority)}</span>
                                   </div>
                                 )}
                               </div>

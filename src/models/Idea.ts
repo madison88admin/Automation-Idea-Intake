@@ -22,7 +22,7 @@ export interface Idea {
   involvedDepartments?: Department[];
   // Admin review fields
   classification?: ClassificationCategory;
-  priority?: number; // 1-10 scale
+  priority?: number; // 0=Not selected, 1=Low, 2=Medium, 3=High, 4=Critical
   adminRemarks?: string;
   reviewedBy?: string;
 }
@@ -58,10 +58,10 @@ export type PriorityLabel = 'Critical' | 'High' | 'Medium' | 'Low';
 export const PRIORITY_LABELS: PriorityLabel[] = ['Critical', 'High', 'Medium', 'Low'];
 
 export const getPriorityLabel = (priority?: number): PriorityLabel | 'N/A' => {
-  if (!priority) return 'N/A';
-  if (priority >= 9) return 'Critical';
-  if (priority >= 7) return 'High';
-  if (priority >= 4) return 'Medium';
+  if (!priority || priority === 0) return 'N/A';
+  if (priority === 4) return 'Critical';
+  if (priority === 3) return 'High';
+  if (priority === 2) return 'Medium';
   return 'Low';
 };
 
