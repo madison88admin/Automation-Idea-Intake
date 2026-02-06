@@ -210,12 +210,12 @@ export function IdeaForm({ onSubmitSuccess }: IdeaFormProps) {
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-gray-500 mb-0.5">Title</p>
-                  <p className="text-sm font-bold text-primary-900 border-l-2 border-primary-500 pl-3 py-1 bg-primary-50/30 rounded-r-lg break-all">{formData.title}</p>
+                  <p className="text-sm font-bold text-primary-900 border-l-2 border-primary-500 pl-3 py-1 bg-primary-50/30 rounded-r-lg break-words min-w-0">{formData.title}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-0.5">Description</p>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-all">{formData.description}</p>
+                  <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-auto min-w-0">
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">{formData.description}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
